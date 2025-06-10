@@ -1,0 +1,27 @@
+{
+  "name": "bloglist",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/2Tucho/blogList.git"
+  },
+  "author": "Alberto Gonzalez Romero",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/2Tucho/blogList/issues"
+  },
+  "homepage": "https://github.com/2Tucho/blogList#readme",
+  "dependencies": {
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "mongodb": "^6.17.0",
+    "mongoose": "^8.15.1"
+  }
+}
