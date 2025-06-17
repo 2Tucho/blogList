@@ -7,15 +7,45 @@ listsRouter.get('/', (request, response) => {
   })
 })
 
-listsRouter.post('/', (request, response) => {
-  const blog = new Blog(request.body)
+listsRouter.get('/:id', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+  if (blog) {
+    response.json(blog)
+  } else {
+    response.status(404).end()
+  }
+})
 
-  blog
-    .save()
-    .then((result) => {
-      response.status(201).json(result)
-    })
-    .catch((error) => next(error))
+listsRouter.post('/', async (request, response, next) => {
+  const body = request.body
+
+  const blog = new Blog({
+    title: body.title,
+    author: body.author,
+    url: body.url,
+    likes: body.likes
+  })
+
+  const savedBlog = await blog.save()
+  response.status(201).json(savedBlog)
+})
+
+listsRouter.delete('/:id', async (request, response) => {
+  await Blog.findByIdAndDelete(request.params.id)
+  response.status(204).end()
+})
+
+listsRouter.put('/:id', async (request, response) => {
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    request.params.id,
+    request.body, //{ request.body.likes } si solamente quisiese actualizar los likes
+    { new: true, runValidators: true }
+  )
+  if (updatedBlog) {
+    response.json(updatedBlog)
+  } else {
+    response.status(404).end()
+  }
 })
 
 module.exports = listsRouter
