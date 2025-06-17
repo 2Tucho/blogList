@@ -35,4 +35,17 @@ listsRouter.delete('/:id', async (request, response) => {
   response.status(204).end()
 })
 
+listsRouter.put('/:id', async (request, response) => {
+  const updatedBlog = await Blog.findByIdAndUpdate(
+    request.params.id,
+    request.body, //{ request.body.likes } si solamente quisiese actualizar los likes
+    { new: true, runValidators: true }
+  )
+  if (updatedBlog) {
+    response.json(updatedBlog)
+  } else {
+    response.status(404).end()
+  }
+})
+
 module.exports = listsRouter

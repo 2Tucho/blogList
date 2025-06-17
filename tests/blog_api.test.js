@@ -106,6 +106,23 @@ test("a blog is deleted by its id", async () => {
     assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length - 1)
 })
 
+test("update the number of likes for a blog post", async () => {
+    const getBlogs = await helper.blogsInDb()
+    const blogToUpdate = getBlogs[0]
+
+    await api
+        .get(`/api/blogs/${blogToUpdate.id}`)
+        .expect(200)
+
+    await api
+        .put(`/api/blogs/${blogToUpdate.id}`)
+        .send({ likes: 30000 })
+        .expect(200)
+    
+    const blogsAtEnd = await helper.blogsInDb()
+    assert.notStrictEqual(blogToUpdate.likes, blogsAtEnd[0].likes);
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
