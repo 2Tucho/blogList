@@ -7,6 +7,7 @@ const blogSchema = mongoose.Schema({
   likes: Number,
 })
 
+//Para que la propiedad _id pase a llamarse id
 blogSchema.set('toJSON', {
     transform: (document, returnedObject) => {
         returnedObject.id = returnedObject._id.toString()
