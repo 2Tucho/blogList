@@ -7,7 +7,7 @@ listsRouter.get('/', (request, response) => {
   })
 })
 
-listsRouter.post('/', (request, response) => {
+listsRouter.post('/', (request, response, next) => {
   const blog = new Blog(request.body)
 
   blog

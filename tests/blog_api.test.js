@@ -66,6 +66,32 @@ test("if the number of likes isn't specified it is 0 by default", async () => {
     assert.strictEqual(blogAdded[blogAdded.length - 1].likes, 0)
 })
 
+test("if the title is not defined it responds with a code 400", async () => {
+    const newBlog = {
+        author: "Un muy reputado desarrollador",
+        url: "www.programareslomejor.com",
+        likes: 49
+    }
+
+    await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(400)
+})
+
+test("if the url is not defined it responds with a code 400", async () => {
+    const newBlog = {
+        title: "Las maravillas de la programación",
+        author: "Un muy reputado desarrollador",
+        likes: 49
+    }
+
+    await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(400)
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
