@@ -50,6 +50,22 @@ test("a new blog is added", async () => {
     assert(titles.includes("Las maravillas de la programación"))
 })
 
+test("if the number of likes isn't specified it is 0 by default", async () => {
+    const newBlog = {
+        title: "Las maravillas de la programación",
+        author: "Un muy reputado desarrollador",
+        url: "www.programareslomejor.com"
+    }
+
+    await api
+        .post("/api/blogs")
+        .send(newBlog)
+        .expect(201)
+
+    const blogAdded = await helper.blogsInDb()
+    assert.strictEqual(blogAdded[blogAdded.length - 1].likes, 0)
+})
+
 after(async () => {
     await mongoose.connection.close()
 })
