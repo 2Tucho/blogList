@@ -2,6 +2,7 @@ const listsRouter = require('express').Router()
 const jwt = require('jsonwebtoken')
 const Blog = require('../models/blog')
 const User = require('../models/user')
+const middleware = require("../utils/middleware")
 
 const getTokenFrom = request => {
     const authorization = request.get('authorization')
@@ -28,13 +29,9 @@ listsRouter.get('/:id', async (request, response) => {
     }
 })
 
-listsRouter.post('/', async (request, response) => {
+listsRouter.post('/', middleware.tokenExtractor, async (request, response) => {
     const body = request.body
-
-    const decodedToken = jwt.verify(getTokenFrom(request), process.env.SECRET)
-    if (!decodedToken.id) {
-        return response.status(401).json({ error: 'token invalid' })
-    }
+    const decodedToken = jwt.verify(request.token, process.env.SECRET)
     const user = await User.findById(decodedToken.id)
 
     const blog = new Blog({
