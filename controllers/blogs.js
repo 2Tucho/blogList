@@ -29,10 +29,9 @@ listsRouter.get("/:id", async (request, response) => {
     }
 })
 
-listsRouter.post("/", middleware.tokenExtractor, async (request, response) => {
-    const body = request.body
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-    const user = await User.findById(decodedToken.id)
+listsRouter.post("/", middleware.userExtractor, async (request, response) => {
+    const body = request.body;
+    const user = request.user;
 
     const blog = new Blog({
         title: body.title,
@@ -49,10 +48,8 @@ listsRouter.post("/", middleware.tokenExtractor, async (request, response) => {
     response.status(201).json(savedBlog)
 })
 
-listsRouter.delete("/:id", async (request, response) => {
-    const decodedToken = jwt.verify(request.token, process.env.SECRET)
-
-    const user = await User.findById(decodedToken.id)
+listsRouter.delete("/:id", middleware.userExtractor, async (request, response) => {
+    const user = request.user
     const blog = await Blog.findById(request.params.id)
 
     if (blog.user.toString() === user.id.toString()) {
