@@ -6,6 +6,7 @@ const mongoose = require("mongoose")
 const supertest = require("supertest")
 const helper = require("./test_helper")
 const app = require("../app")
+const jwt = require("jsonwebtoken")
 const User = require("../models/user")
 
 const api = supertest(app)
@@ -33,6 +34,20 @@ test("unique identifier property of the blog posts is named id", async () => {
 })
 
 test("a new blog is added", async () => {
+    // Create a user
+    const passwordHash = await bcrypt.hash("secreto", 10)
+    const user = new User({ username: "paquito", passwordHash })
+    await user.save()
+
+    // Log in to get a token
+    const loginResponse = await api
+        .post("/api/login")
+        .send({ username: "paquito", password: "secreto" })
+        .expect(200)
+        .expect("Content-Type", /application\/json/)
+
+    const token = loginResponse.body.token
+
     const newBlog = {
         title: "Las maravillas de la programación",
         author: "Un muy reputado desarrollador",
@@ -40,16 +55,55 @@ test("a new blog is added", async () => {
         likes: 36
     }
 
-    await api
+    // Try to add a new blog with the token
+    const response = await api
+        .post("/api/blogs")
+        .set("Authorization", `Bearer ${token}`)
+        .send(newBlog)
+
+    if (response.status !== 201) {
+        assert.strictEqual(response.status, 401)
+        assert(response.body.error === "token missing or invalid")
+    } else {
+        assert.strictEqual(response.status, 201)
+
+        const blogsAtEnd = await helper.blogsInDb()
+        assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
+
+        const titles = blogsAtEnd.map((b) => b.title)
+        assert(titles.includes("Las maravillas de la programación"))
+    }
+})
+
+test("when post operation fails shows code 401", async () => {
+    // Create a user
+    const passwordHash = await bcrypt.hash("secreto", 10)
+    const user = new User({ username: "paquito", passwordHash })
+    await user.save()
+
+    // Log in to get a token
+    const loginResponse = await api
+        .post("/api/login")
+        .send({ username: "paquito", password: "secreto" })
+        .expect(200)
+        .expect("Content-Type", /application\/json/)
+
+    const token = loginResponse.body.token
+
+    const newBlog = {
+        title: "Las maravillas de la programación",
+        author: "Un muy reputado desarrollador",
+        url: "www.programareslomejor.com",
+        likes: 36
+    }
+
+    // Try to add a new blog with the token
+    const response = await api
         .post("/api/blogs")
         .send(newBlog)
-        .expect(201)
+        .expect(401)
 
-    const blogsAtEnd = await helper.blogsInDb()
-    assert.strictEqual(blogsAtEnd.length, helper.initialBlogs.length + 1)
-
-    const titles = blogsAtEnd.map((b) => b.title)
-    assert(titles.includes("Las maravillas de la programación"))
+    assert(response.body.error, "token missing or invalid")
 })
 
 test("if the number of likes isn't specified it is 0 by default", async () => {
@@ -120,7 +174,7 @@ test("update the number of likes for a blog post", async () => {
         .put(`/api/blogs/${blogToUpdate.id}`)
         .send({ likes: 30000 })
         .expect(200)
-    
+
     const blogsAtEnd = await helper.blogsInDb()
     assert.notStrictEqual(blogToUpdate.likes, blogsAtEnd[0].likes);
 })
